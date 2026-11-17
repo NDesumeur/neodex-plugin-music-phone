@@ -421,17 +421,20 @@ div.muCheck pre,.muLogs{margin:6px 0 0;white-space:pre-wrap;word-break:break-wor
   #mu .muSide{position:absolute;z-index:15;left:0;top:0;bottom:0;width:min(290px,86vw);box-shadow:8px 0 0 rgba(0,0,0,.35)}
   #mu .muSide.closed{width:0;box-shadow:none}
   #mu .muSideBtn{padding:12px 10px}
-  #mu .muMain{padding:10px;gap:10px;overflow-y:auto;overscroll-behavior:contain}
-  #mu .muNow{flex-direction:column;align-items:stretch;gap:6px;padding:12px}
-  #mu .muCoverWrap{width:100%;height:min(210px,30vh);align-self:center}
-  #mu .muCoverWrap.rect{width:min(210px,30vh);height:min(210px,30vh)}
-  #mu .muTitle{font-size:17px;text-align:center}
-  #mu .muTime{align-self:center}
-  #mu .muKickRow{justify-content:center}
-  #mu .muProgress{margin:6px 0 8px}
+  #mu .muMain{padding:10px;gap:10px;overflow:hidden;display:flex;flex-direction:column}   /* la liste prend toute la place qui reste et défile seule */
+  /* le lecteur comme sur PC, en plus petit : le disque à gauche, le titre et le temps à droite, la barre et les boutons dessous */
+  #mu .muNow{display:grid;grid-template-columns:140px minmax(0,1fr);grid-template-areas:"cov kick" "cov title" "cov time" "prog prog" "ctl ctl";column-gap:12px;row-gap:2px;align-items:center;padding:12px 12px 10px}
+  #mu .muInfo{display:contents}  #mu .muNow>:not(.muCoverWrap):not(.muInfo){display:none!important}   /* volume et profil audio : les boutons du téléphone les remplacent */
+  #mu .muCoverWrap,#mu .muCoverWrap.rect{grid-area:cov;width:140px;height:104px;align-self:center}
+  #mu .muCoverWrap.rect{width:104px;justify-self:center}
+  #mu .muKickRow{grid-area:kick;justify-content:flex-start;align-self:end}
+  #mu .muKick{font-size:12px}
+  #mu .muTitle{grid-area:title;font-size:15px;line-height:1.3;height:2.6em;margin:2px 0}
+  #mu .muTime{grid-area:time;align-self:start;font-size:13px}
+  #mu .muProgress{grid-area:prog;height:30px;margin:8px 0 6px}
   #mu .muSpectrum{display:none}   /* le son de YouTube ne passe pas par la page : pas de spectre */
-  #mu .muControls{gap:34px}
-  #mu .muLib{flex:none;height:calc(100% - 12px);min-height:420px}
+  #mu .muControls{grid-area:ctl;gap:40px;padding-bottom:2px}
+  #mu .muLib{flex:1 1 0;height:auto;min-height:0;display:flex;flex-direction:column}  #mu .muLib .muList{flex:1 1 0;min-height:0}
   #mu .muLibHead{padding:12px 12px 6px}
   #mu .muFilters{padding:0 12px 8px}  #mu .muFilters .muFilter{flex:1 1 100%;min-height:38px}  #mu .muFilters .muSelect{flex:1 1 0;min-width:0;width:0;min-height:36px}
   #mu .muList{margin:0 6px 8px}

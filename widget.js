@@ -264,12 +264,12 @@ export default function (ctx) {
   function paint() {
     T = d?.T || T;
     if (T) for (const [k, v] of Object.entries({ card: T.CARD, card2: T.CARD_ALT, border: T.BORDER, text: T.TEXT, sub: T.SUBTEXT, acc: T.ACCENT, acc2: T.ACCENT_2, heart: T.HEART })) if (v) box.style.setProperty('--m' + k, v);
-    if (!d || !d.title || !T) { mp.cur = null; box.classList.remove('deck'); box.replaceChildren(Object.assign(el('div', 'empty'), { innerHTML: '<b>NEOMUSIC</b>Rien en cours. Clique pour choisir une musique.' })); fit(); return; }
+    if (!d || !d.title || !T) { mp.cur = null; box.classList.remove('deck'); box.replaceChildren(Object.assign(el('div', 'empty'), { innerHTML: '<b>NEOMUSIC</b>Rien en cours. Touche pour choisir une musique.' })); fit(); return; }
     if (!box.contains(body)) box.replaceChildren(cv, body, specBox);
     mp.cur = d; mu.settings = d.deck || {}; muSpec.levels = d.spec || muSpec.levels;
     if (d.cover !== coverKey) {  // la pochette, comme muSetCover
       coverKey = d.cover; mp.coverImg = null;
-      if (d.cover) { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => { if (coverKey === d.cover) mp.coverImg = img; }; img.src = /^https:/.test(d.cover) ? d.cover : 'neoplugin://neodex.music/cover/' + encodeURIComponent(d.cover);   // téléphone : l'adresse de la pochette YouTube }
+      if (d.cover) { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => { if (coverKey === d.cover) mp.coverImg = img; }; img.src = /^https:/.test(d.cover) ? d.cover : 'neoplugin://neodex.music/cover/' + encodeURIComponent(d.cover); }   // téléphone : l'adresse de la pochette YouTube
     }
     box.classList.toggle('deck', !!mu.settings.vinyl && muLevel().level >= 150);
     titleEl.textContent = d.title; titleEl.title = d.title; artistEl.textContent = d.artist || '';
