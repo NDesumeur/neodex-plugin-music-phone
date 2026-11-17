@@ -1,0 +1,74 @@
+{
+  "id": "neodex.music",
+  "name": "NeoMusic",
+  "version": "1.0.0",
+  "author": "NDesumeur",
+  "description": "NeoMusic sur téléphone : les mêmes thèmes, la même platine, les mêmes playlists que sur PC (synchronisées), recherche et liens YouTube, favoris, statistiques, 33 succès et niveaux, mode sommeil, widget. La musique continue écran éteint, avec lecture / pause et suivant dans la notification.",
+  "icon": "icon.png",
+  "entry": "index.js",
+  "view": "music",
+  "neobase": ">=4.1.0",
+  "neodex": ">=3.2.0",
+  "type": "app",
+  "category": "Musique",
+  "syncMode": "fusion",
+  "syncInfo": "Bibliothèque et playlists (ajouts et suppressions des deux côtés) ; statistiques et niveau : le meilleur gagne.",
+  "mobile": true,
+  "compatibility": [
+    "android"
+  ],
+  "system": false,
+  "dependencies": {},
+  "sync": {
+    "library": {
+      "auto": [
+        "session",
+        "stats.*",
+        "achievements"
+      ],
+      "union": [
+        "stats.history"
+      ]
+    }
+  },
+  "sdk": "2.1.0",
+  "permissions": [
+    "storage",
+    "music",
+    "network:i.ytimg.com",
+    "widget"
+  ],
+  "commands": [
+    {
+      "id": "toggle",
+      "title": "Lecture / pause",
+      "background": true
+    },
+    {
+      "id": "next",
+      "title": "Morceau suivant",
+      "background": true
+    },
+    {
+      "id": "prev",
+      "title": "Morceau précédent",
+      "background": true
+    },
+    {
+      "id": "fav",
+      "title": "Ajouter ou retirer des favoris",
+      "background": true
+    },
+    {
+      "id": "volup",
+      "title": "Monter le volume",
+      "background": true
+    },
+    {
+      "id": "voldown",
+      "title": "Baisser le volume",
+      "background": true
+    }
+  ],
+  "widget": "widget.js"
+}
