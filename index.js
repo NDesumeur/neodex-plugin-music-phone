@@ -423,7 +423,7 @@ div.muCheck pre,.muLogs{margin:6px 0 0;white-space:pre-wrap;word-break:break-wor
   #mu .muSideBtn{padding:12px 10px}
   #mu .muMain{padding:10px;gap:10px;overflow:hidden;display:flex;flex-direction:column}   /* la liste prend toute la place qui reste et défile seule */
   /* le lecteur comme sur PC, en plus petit : le disque à gauche, le titre et le temps à droite, la barre et les boutons dessous */
-  #mu .muNow{display:grid;grid-template-columns:140px minmax(0,1fr);grid-template-areas:"cov kick" "cov title" "cov time" "prog prog" "ctl ctl";column-gap:12px;row-gap:2px;align-items:center;padding:12px 12px 10px}
+  #mu .muNow{display:grid;grid-template-columns:140px minmax(0,1fr);grid-template-areas:"cov kick" "cov title" "cov time" "prog prog" "spec spec" "ctl ctl";column-gap:12px;row-gap:2px;align-items:center;padding:12px 12px 10px}
   #mu .muInfo{display:contents}  #mu .muNow>:not(.muCoverWrap):not(.muInfo){display:none!important}   /* volume et profil audio : les boutons du téléphone les remplacent */
   #mu .muCoverWrap,#mu .muCoverWrap.rect{grid-area:cov;width:140px;height:104px;align-self:center}
   #mu .muCoverWrap.rect{width:104px;justify-self:center}
@@ -432,7 +432,7 @@ div.muCheck pre,.muLogs{margin:6px 0 0;white-space:pre-wrap;word-break:break-wor
   #mu .muTitle{grid-area:title;font-size:15px;line-height:1.3;height:2.6em;margin:2px 0}
   #mu .muTime{grid-area:time;align-self:start;font-size:13px}
   #mu .muProgress{grid-area:prog;height:30px;margin:8px 0 6px}
-  #mu .muSpectrum{display:none}   /* le son de YouTube ne passe pas par la page : pas de spectre */
+  #mu .muSpectrum{grid-area:spec;margin:0 0 6px}   /* le son de YouTube ne passe pas par la page : spectre imité (fakeDb) */
   #mu .muControls{grid-area:ctl;gap:40px;padding-bottom:2px}
   #mu .muLib{flex:1 1 0;height:auto;min-height:0;display:flex;flex-direction:column}  #mu .muLib .muList{flex:1 1 0;min-height:0}
   #mu .muLibHead{padding:12px 12px 6px}
@@ -506,13 +506,22 @@ export default async function (ctx) {
     // le son de YouTube ne passe pas par la page : égaliseur, balance et spectre deviennent des pièces sans effet ; seul le volume (gain) est transmis
     var param = function (v) { return { value: v, setValueAtTime: function () {}, linearRampToValueAtTime: function () {}, setTargetAtTime: function () {} }; };
     var node = function (o) { o = o || {}; o.connect = function (x) { return x; }; o.disconnect = function () {}; return o; };
+    // shortcut: spectre imité (pas le vrai son), suffisant pour l'animation ; le vrai demanderait de capter l'audio de la WebView côté Java
+    function fakeDb(a) {
+      if (st.paused) { a.fill(-140); return; }
+      var t = performance.now() / 1000, beat = Math.exp(-((t * 2.05) % 1) * 5), hz = 48000 / 2048;
+      for (var i = 0; i < a.length; i++) {
+        var lp = Math.max(0, Math.min(1, Math.log(Math.max(i, 1) * hz / 40) / Math.log(350)));   // place du bin entre 40 Hz et 14 kHz
+        a[i] = -30 - lp * 35 + 6 * Math.sin(t * (2.1 + 6 * lp) + lp * 19) * Math.sin(t * (0.9 + lp) + lp * 7) + (6 + beat * 10) * Math.pow(1 - lp, 2) + 3 * Math.sin(t * 11 + lp * 40);   // pente des aigus réglée sur muSpectrumBlock (bandes larges en haut)
+      }
+    }
     function Ctx() { this.state = 'running'; this.sampleRate = 48000; this.currentTime = 0; this.destination = node(); }
     Ctx.prototype.resume = Ctx.prototype.suspend = Ctx.prototype.close = function () { return Promise.resolve(); };
     Ctx.prototype.createMediaElementSource = function () { return node(); };
     Ctx.prototype.createBiquadFilter = function () { return node({ type: 'peaking', frequency: param(350), Q: param(1), gain: param(0) }); };
     Ctx.prototype.createStereoPanner = function () { return node({ pan: param(0) }); };
     Ctx.prototype.createDynamicsCompressor = function () { return node({ threshold: param(-24), knee: param(30), ratio: param(12), attack: param(0.003), release: param(0.25) }); };
-    Ctx.prototype.createAnalyser = function () { return node({ fftSize: 2048, frequencyBinCount: 1024, smoothingTimeConstant: 0.8, getFloatFrequencyData: function (a) { a.fill(-140); }, getByteFrequencyData: function (a) { a.fill(0); }, getFloatTimeDomainData: function (a) { a.fill(0); }, getByteTimeDomainData: function (a) { a.fill(128); } }); };
+    Ctx.prototype.createAnalyser = function () { return node({ fftSize: 2048, frequencyBinCount: 1024, smoothingTimeConstant: 0.8, getFloatFrequencyData: fakeDb, getByteFrequencyData: function (a) { var d = new Float32Array(a.length); fakeDb(d); for (var i = 0; i < a.length; i++) a[i] = Math.max(0, Math.min(255, (d[i] + 100) * 2.55)); }, getFloatTimeDomainData: function (a) { a.fill(0); }, getByteTimeDomainData: function (a) { a.fill(128); } }); };
     Ctx.prototype.createGain = function () { var v = 1; return node({ gain: { get value() { return v; }, set value(x) { if (x !== v) { v = x; cmd({ op: 'volume', v: x }); } }, setValueAtTime: function () {} } }); };
     window.Audio = PhoneAudio; window.AudioContext = window.webkitAudioContext = Ctx;
   })();   // téléphone : « Audio » et « AudioContext » de NeoMusic pilotent le lecteur YouTube de NeoDex
@@ -986,6 +995,8 @@ export default async function (ctx) {
     mp.queue = queue; mp.cur = t; mp.length = muDur(t); mp.resume = 0;
     mp.gain = muCache[muId(t)]?.g ?? 1; muVolumeApply();
     muAudio.src = src;
+    // téléphone : un lien collé arrive sans durée (0:00 dans la liste) ; le lecteur YouTube la donne au chargement, on la garde
+    if (!muDur(t)) muAudio.addEventListener('loadedmetadata', () => { const d = Math.round(muAudio.duration); if (mp.cur === t && d > 0) { t.duration = d; t.song_length = muTime(d); mp.length = d; muSave(); muRefresh(); } }, {once: true});
     if (start > 0) muAudio.addEventListener('loadedmetadata', () => { try { muAudio.currentTime = start; } catch {} }, {once: true});
     muAudio.play().catch(e => { if (e.name !== 'AbortError') { muStatus('Erreur audio', T.DANGER); muWarn('lecture', e); } });
     mp.paused = false; mp.lastTick = performance.now();
@@ -1375,7 +1386,8 @@ export default async function (ctx) {
   }
   const muSuperOn = now => { if (now - (mp.supAt || -1e9) > 2000) { mp.supAt = now; mp.supOn = !!mu.settings.superVis && muLevel().level >= 100; } return mp.supOn; };
   // platine:début (recopié tel quel dans widget.js par tools/widget-sync.js)
-  const muInner = e => { if (!e) return 0; const cs = getComputedStyle(e); return e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); };  // largeur sans le rembourrage (l'écran du Deluxe en a)
+  const muInner = e => { if (!e) return 0; const cs = getComputedStyle(e); if (cs.display === 'contents') return muInner(e.parentElement);   // téléphone : .muInfo n'a pas de boîte
+    return e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); };  // largeur sans le rembourrage (l'écran du Deluxe en a)
   function muPixSpectrum(cv, cssH, now) {
     const avail = muInner(cv.parentElement); if (!avail) return;
     const P = Math.max(2, Math.round(3 * devicePixelRatio)) / devicePixelRatio, cols = Math.floor(avail / P), rows = Math.floor(cssH / P);
@@ -1511,14 +1523,16 @@ export default async function (ctx) {
     $('mmTime').textContent = muClock(pos) + ' / ' + muClock(dur);
   }
   function muFrame(now) {
-    requestAnimationFrame(muFrame);
     const main = view.classList.contains('on');
+    // NeoMusic pas à l'écran : 8 images par seconde suffisent au widget de l'accueil (et une iframe cachée ne reçoit plus de requestAnimationFrame sur Android)
+    if (main || mp.miniOn) requestAnimationFrame(muFrame); else setTimeout(() => muFrame(performance.now()), 120);
     if (document.hidden || (!main && !mp.miniOn && !mp.wData?.title)) return;  // nothing on screen (nor a song for the home widget): no drawing at all (the music still plays)
+    if (main && now - (mp.frameAt || 0) < (muAudio && !muAudio.paused ? 33 : 100)) return; mp.frameAt = now;   // téléphone : 30 images/s en lecture, 10 en pause
     if (muAudio && !muAudio.paused && muNodes) { if (now - muSpec.blockAt >= 64) { muSpec.blockAt = now; muSpectrumBlock(); } }
     else muSpec.ref = 1e-6;
     muSpin(now);
     if (main) {
-      muDrawCover(now); if (mu.settings.visualizer) muSuperOn(now) ? muSuperSpectrum($('muSpectrum'), 112, now) : muPixSpectrum($('muSpectrum'), 64, now);
+      muDrawCover(now); if (mu.settings.visualizer) muSuperOn(now) ? muSuperSpectrum($('muSpectrum'), 112, now) : muPixSpectrum($('muSpectrum'), innerWidth <= 700 ? 40 : 64, now);
       if (muAudio && !muAudio.paused && now - (mp.progAt || 0) > 120) { mp.progAt = now; muDrawProgress(); }
     } else if (mp.miniOn) muMiniFrame(now);
     if (muAudio && !muAudio.paused) { muWidgetSpec(now); if (performance.now() - (mp.wAt || 0) > 5000) muWidget(); }
@@ -1773,7 +1787,7 @@ export default async function (ctx) {
     muSave(); muLoadPlaylist('Favoris'); muStatus('Playlist supprimée');
   }
   const muTrack = (m, online) => ({display_title: m.author ? `${m.title} - ${m.author}` : m.title, author: m.author || '', publish_date: m.publish_date || '', date_added: Date.now() / 1000,
-    song_length: muTime(m.duration), duration: +m.duration || 0, url: m.url, thumbnail_url: m.thumbnail_url || m.thumbnail || '', cover: m.cover || '', file: online ? '' : m.file || '', is_online: !!online});
+    song_length: +m.duration ? muTime(m.duration) : '', duration: +m.duration || 0, url: m.url, thumbnail_url: m.thumbnail_url || m.thumbnail || '', cover: m.cover || '', file: online ? '' : m.file || '', is_online: !!online});
 
   /* ---------- Rechercher / importer: one field for a name or any YouTube, SoundCloud or Deezer link ---------- */
   const MU_YT = /^https?:\/\/(www\.|m\.)?(youtube\.com|youtu\.be|music\.youtube\.com)\//i, MU_SC = /^https?:\/\/(www\.|m\.)?(soundcloud\.com|on\.soundcloud\.com|snd\.sc)\//i, MU_DZ = /deezer\.com\/|(deezer|dzr)\.page\.link/i;

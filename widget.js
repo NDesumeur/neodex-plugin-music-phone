@@ -258,7 +258,7 @@ export default function (ctx) {
   document.body.append(box);
 
   // le petit lecteur garde ses proportions et grandit (ou rétrécit) pour remplir la case du widget
-  const fit = () => { box.style.zoom = 1; const k = Math.min((innerWidth - 16) / box.offsetWidth, (innerHeight - 16) / box.offsetHeight); box.style.zoom = Math.max(.5, Math.min(3, k)); };
+  const fit = () => { box.style.zoom = 1; const k = Math.min((innerWidth - 8) / box.offsetWidth, (innerHeight - 8) / box.offsetHeight); box.style.zoom = Math.max(.5, Math.min(3, k)); };
   addEventListener('resize', fit);
   let coverKey = null;
   function paint() {
@@ -279,9 +279,11 @@ export default function (ctx) {
     vol.textContent = d.vol == null ? '' : 'VOL ' + Math.round(d.vol * 100) + ' %';
     fit();
   }
+  let drawn = 0;
   function frame(now) {  // muMiniFrame d'index.js
     requestAnimationFrame(frame);
     if (document.hidden || !mp.cur || !T) return;
+    if (now - drawn < (muAudio.paused ? 1000 : 50)) return; drawn = now;   // téléphone : 20 images/s en lecture, 1/s en pause (le disque ne tourne pas)
     muSpin(now);
     if (box.classList.contains('deck')) {
       const r = cv.getBoundingClientRect(), k = devicePixelRatio || 1, w = Math.round(r.width * k), h = Math.round(r.height * k);
