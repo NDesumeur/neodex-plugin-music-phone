@@ -1,7 +1,7 @@
 {
   "id": "neodex.music",
   "name": "NeoMusic",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "author": "NDesumeur",
   "description": "NeoMusic sur téléphone : les mêmes thèmes, la même platine, les mêmes playlists que sur PC (synchronisées), recherche et liens YouTube, favoris, statistiques, 33 succès et niveaux, mode sommeil, widget. La musique continue écran éteint, avec lecture / pause et suivant dans la notification.",
   "icon": "icon.png",
@@ -12,7 +12,7 @@
   "type": "app",
   "category": "Musique",
   "syncMode": "fusion",
-  "syncInfo": "Bibliothèque et playlists (ajouts et suppressions des deux côtés) ; statistiques et niveau : le meilleur gagne.",
+  "syncInfo": "Seuls les playlists, le niveau et les succès voyagent. Réglages, morceau en cours, file d'attente et historique d'écoute restent sur chaque appareil.",
   "mobile": true,
   "compatibility": [
     "android"
@@ -20,7 +20,7 @@
   "system": false,
   "dependencies": {},
   "sync": {
-    "library": {
+    "library": { "share": ["playlists", "stats", "achievements", "-stats.history"],
       "auto": [
         "session",
         "stats.*",
@@ -36,6 +36,7 @@
     "storage",
     "music",
     "network:i.ytimg.com",
+    "camera",
     "widget"
   ],
   "commands": [
