@@ -1,7 +1,7 @@
 {
   "id": "neodex.music",
   "name": "NeoMusic",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "NDesumeur",
   "description": "NeoMusic sur téléphone : les mêmes thèmes, la même platine, les mêmes playlists que sur PC (synchronisées), recherche et liens YouTube, favoris, statistiques, 33 succès et niveaux, mode sommeil, widget. La musique continue écran éteint, avec lecture / pause et suivant dans la notification.",
   "icon": "icon.png",
