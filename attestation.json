@@ -1,9 +1,9 @@
 {
   "pluginId": "neodex.music",
   "repo": "NDesumeur/neodex-plugin-music-phone",
-  "version": "1.2.0",
-  "sha256": "1e5fc34cf83a0b1feb57e4949ee0a15c3719106d3020724bc6d8ab90eadd0bc1",
-  "approvedAt": "2026-11-20T01:51:13.527Z",
+  "version": "1.2.1",
+  "sha256": "2ec0248f1a75fcd320a550ed4308edd113d909b413ed53ab85b817c111ae4181",
+  "approvedAt": "2026-11-20T13:08:02.298Z",
   "neobase": ">=4.1.0",
-  "signature": "K/Isb5n+E+50W6fc6GkKUT/wDAIUZTu9OLVhTFcCDug31NeOE3NlRhskEkQhEKhrvEdBLRQws+Js4O4TUBRAAQ=="
+  "signature": "UmX7zDbvB4muuO37M6kyyU8jyjd41k6uY/lYNFzMPc3viSFi7ZE8agYnlojjJ3ZVFIMdQQ27uC+1D8VBCPCzCw=="
 }
