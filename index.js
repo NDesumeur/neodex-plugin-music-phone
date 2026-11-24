@@ -439,6 +439,7 @@ div.muCheck pre,.muLogs{margin:6px 0 0;white-space:pre-wrap;word-break:break-wor
   #mu .muFilters{padding:0 12px 8px}  #mu .muFilters .muFilter{flex:1 1 100%;min-height:38px}  #mu .muFilters .muSelect{flex:1 1 0;min-width:0;width:0;min-height:36px}
   #mu .muList{margin:0 6px 8px}
   #mu .muWin{left:0!important;top:38px!important;width:100%!important;height:calc(100% - 38px);max-height:none}
+  #mu.px .muWin{width:calc(100% - 16px)!important;height:calc(100% - 54px)}   /* l'habillage pixel ajoute 8 px de marge : sans ça la fenêtre dépasse à droite et en bas */
   #mu .muWinBody{padding:4px 14px 18px}
   #mu .muWinBar{cursor:default}
   #mu .muDlg{width:calc(100vw - 24px);max-width:none}
